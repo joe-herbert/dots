@@ -1,0 +1,575 @@
+#!/usr/bin/env bash
+wm="$(wmctrl -m 2>/dev/null | head -n 1 | cut -d' ' -f2-)"
+
+# Quick shortcuts to some dirs
+alias dls="cd ~/downloads"
+alias docs="cd ~/documents"
+alias uni="cd ~/uni/3"
+alias 331="cd ~/uni/3/331"
+alias 338="cd ~/uni/3/338"
+alias 315="cd ~/uni/3/315"
+alias 318="cd ~/uni/3/318"
+alias 328="cd ~/uni/3/328"
+alias 390="cd ~/uni/3/390"
+alias diss="cd ~/uni/3/390/diss"
+alias nights="cd ~/uni/3/390/Nightlive/server/nightlive"
+alias nightc="cd ~/uni/3/390/Nightlive/client/Nightlive"
+alias dev="cd ~/dev"
+alias pics="cd ~/pictures"
+alias pho="cd ~/photography"
+alias conf="cd ~/.config"
+alias vids="cd ~/videos"
+alias dots="cd ~/dotfiles"
+alias bin="cd ~/bin"
+alias lbin="cd $HOME/.local/bin"
+alias tmp="cd /tmp"
+alias ..="cd .."
+alias badminton="cd ~/uni/badminton"
+alias fuz="cd ~/uni/208/fuzzy-pancake"
+alias '#'="cd ~/#"
+alias sd="cd ~/sd/DCIM"
+alias ffcss="vim /home/joe/.mozilla/firefox/z90dtx9p.dev-edition-default/chrome/userChrome.css"
+
+function mountsd() {
+    disks="$(sudo fdisk -l | ag ^/dev/ | ag -v nvme | sed -e 's/\/dev\///' -e 's/[[:space:]]*$//' | cut -d' ' -f1 | sort | uniq)"
+    if [ $(echo "$disks" | wc -l) = "1" ]; then
+        disk=$disks
+    else
+        disk="$(echo "$disks" | fzf)"
+    fi
+    sudo mount "/dev/$disk" ~/sd
+}
+
+function savesd() {
+    mountsd
+    find ~/sd/DCIM/* ! -name '*.DAT' -type f | xargs cp -t ~/photography/
+}
+
+alias clearsd="sudo rm -r ~/sd/DCIM/*"
+alias umountsd="sudo umount ~/sd"
+
+function donesd() {
+    clearsd
+    umountsd
+}
+
+function rmd() {
+    if [ -z "$(ls -A $1)" ]; then
+        rm -d "$1"
+    else
+        read "?Directory not empty. Delete? [Y/n] "
+        if [[ ! $REPLY =~ ^[Nn]$ ]]; then
+            rm -r "$1"
+        fi
+    fi
+}
+
+i() {
+    if [ "$1" != "" ]; then
+        SELECTED_PKGS="$(yay -Slq | fzf --header='Install packages' -m --height 100% --preview 'yay -Si {1}' --query $1)"
+    else
+        SELECTED_PKGS="$(yay -Slq | fzf --header='Install packages' -m --height 100% --preview 'yay -Si {1}')"
+    fi
+	if [ -n "$SELECTED_PKGS" ]; then
+		yay -S $(echo $SELECTED_PKGS)
+	fi
+}
+r() {
+    if [ "$1" != "" ]; then
+        SELECTED_PKGS="$(yay -Qsq | fzf --header='Remove packages' -m --height 100% --preview 'yay -Si {1}' --query $1)"
+    else
+        SELECTED_PKGS="$(yay -Qsq | fzf --header='Remove packages' -m --height 100% --preview 'yay -Si {1}')"
+    fi
+	if [ -n "$SELECTED_PKGS" ]; then
+		yay -Rns $(echo $SELECTED_PKGS)
+	fi
+}
+
+# Quickly edit some files
+alias zshrc="vim $HOME/.zshrc && source $HOME/.zshrc"
+alias vimrc="vim $HOME/.vimrc && source $HOME/.vimrc"
+alias xinitrc="vim $HOME/.xinitrc && $HOME/.xinitrc"
+alias aliases="vim $HOME/.config/aliases && source $HOME/.config/aliases"
+alias todo="vim ~/documents/computerstuff/notes/todo.txt"
+alias xtodo="vim ~/documents/computerstuff/notes/xtodo.txt"
+
+# Enable colors for some commands
+alias ls='ls --color=auto'
+alias grep='grep --color=auto'
+alias fgrep='fgrep --color=auto'
+alias egrep='egrep --color=auto'
+alias tree="tree -C"
+alias ag="ag --nocolor"
+
+# Some more ls aliases
+alias ll='ls -AlLF'
+alias la='ls -AF'
+alias l='ls -CFHL'
+alias t='tree'
+
+# Basically, lets me know what just happened
+# --interactive     prompt before overwrite
+# --verbose         explain what is being done
+alias cp="cp --interactive --verbose"
+alias mv="mv --interactive --verbose"
+alias rm="rm --verbose"
+
+# The remaining storage
+alias storage="df -h / --output=avail | tail -1 | xargs echo | sed 's/G/ GB/g'"
+
+# cat, but with syntax highlighting and it is automaticaly piped to less if 
+# the whole text does not fit in in the terminal
+alias cat="\bat"
+alias o="rifle"
+
+# Some git aliases
+function add() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git add "$@"
+    fi
+}
+function clone() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git clone "$@"
+    fi
+}
+function push() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git push "$@"
+    fi
+}
+function pull() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git pull "$@"
+    fi
+}
+function commit() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git commit "$@"
+    fi
+}
+function checkout() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git checkout "$@"
+    fi
+}
+function log() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        if [ "$1" = "verbose" ]; then
+            git log --author="Joe Herbert" "${@:2}"
+        else
+            git log --author="Joe Herbert" --pretty=%B --oneline "$@"
+        fi
+    else
+        command log "$@"
+    fi
+}
+alias logv="log verbose"
+function stat() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git status "$@"
+    else
+        command stat "$@"
+    fi
+}
+function diff() {
+    if [ $(git rev-parse --is-inside-work-tree) = "true" ]; then
+        git diff "$@"
+    else
+        command diff "$@" -sy --suppress-common-lines
+    fi
+}
+function gclone() {
+    git clone "$@"
+}
+
+
+function cd() {
+    builtin cd "$@"
+    l
+}
+function swap() {
+    local TMPFILE=tmp.$$
+    mv "$1" $TMPFILE && mv "$2" "$1" && mv $TMPFILE "$2"
+}
+function config() {
+    if [ "$1" = "" ]; then
+        cd config
+    else
+        configFile="~/.config/$1/config"
+        if [ "$1" = "rifle" ]; then
+            vim ~/.config/ranger/rifle.conf
+        elif [ "$1" = "wayfire" ]; then
+            vim ~/.config/wayfire.ini
+        elif [ -f ~/.config/$1/config ]; then
+            vim ~/.config/$1/config
+        elif [ -d ~/.config/$1/ ]; then
+            #echo "$(ls -1qp ~/.config/$1/*.conf | grep -v '/.$' | wc -l)"
+            if [ "$(ls -1qp ~/.config/$1/*.conf 2>/dev/null | wc -l)" != "0" ]; then
+                files=($(find ~/.config/$1/*.conf -maxdepth 1 -type f))
+                echo $files
+                vim $files
+            elif [ "$(ls -1qp ~/.config/$1/config.* 2>/dev/null | wc -l)" != "0" ]; then
+                files=($(find ~/.config/$1/config.* -maxdepth 1 -type f))
+                echo $files
+                vim $files
+            elif [ "$(ls -1qp ~/.config/$1/settings.* 2>/dev/null | wc -l)" != "0" ]; then
+                files=($(find ~/.config/$1/settings.* -maxdepth 1 -type f))
+                echo $files
+                vim $files
+            elif [ "$(ls -1qp ~/.config/$1/*.json 2>/dev/null | wc -l)" != "0" ]; then
+                files=($(find ~/.config/$1/*.json -maxdepth 1 -type f))
+                echo $files
+                vim $files
+            elif [ "$(ls -1qp ~/.config/$1/ | grep -v / | wc -l)" != "0" ]; then
+                files=($(find ~/.config/$1/ -maxdepth 1 -type f))
+                echo $files
+                vim $files
+            else
+                echo "file not found"
+            fi
+        else
+            echo "directory not found"
+        fi
+    fi
+}
+function mvws() {
+    swaymsg "workspace '$1'"
+    swaymsg "move workspace to output '$2'"
+}
+function vimfind() {
+    sudo vim $(sudo find / | sudo fzf)
+}
+function rex() {
+    $(history | fzf | xargs | cut -d' ' -f2- )
+}
+function wm-exit() {
+    wm="$(wmctrl -m | head -n 1 | cut -d' ' -f2-)"
+    echo $wm
+    if [ "$wm" = "i3" ]; then
+        i3-msg exit
+    elif [ "$wm" = "awesome" ]; then
+        awesome-client quit
+    else
+        swaymsg exit
+    fi
+}
+function pdfmd() {
+    #pandoc -o "$1.pdf" -V geometry:margin=1in "$1.md" --highlight-style=zenburn
+    css=~/.pandoc/epub.css
+    if [ "$2" = "dark" ]; then
+        css=~/.pandoc/epub-dark.css
+    fi
+    pandoc -f gfm -t html "$1.md" -o "$1tmp0987654321.html" --quiet
+    wkhtmltopdf --user-style-sheet $css "$1tmp0987654321.html" "$1.pdf"
+    rm "$1tmp0987654321.html"
+    rifle "$1.pdf"
+}
+function pdfsplit() {
+    pdf=$1
+    splitsFile=$2
+    files=()
+    i=0
+    secs=$(date +"%s")
+    while read p; do
+        echo "$p"
+        s=$(awk -F- '{print $1}' <<< $p)
+        f=$(awk -F- '{print $2}' <<< $p)
+        echo "$s"
+        echo "$f"
+        gs -dNOPAUSE -dQUIET -dBATCH -sOutputFile=".pdfsplit$secs$i.tmp" -dFirstPage=$s -dLastPage=$f -sDEVICE=pdfwrite "$pdf"
+        i=$i+1
+    done <$splitsFile
+    gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=finished.pdf ".pdfsplit$secs*.tmp"
+}
+function newwifi() {
+    networks="$(availablewifi)"
+    essid="$(echo "$networks\nCustom " | fzf)"
+    if [ "$essid" = "Custom" ]; then
+        read "essid?ESSID: "
+    fi
+    read -s "pass?Password: "
+    nmcli d wifi connect "$essid" password "$pass" ifname wlan0
+}
+#function newwifi() {
+#    read "name?Name: "
+#    if [ -f /etc/netctl/$name ]; then
+#        while true; do
+#            read "yn?This profile already exists. Overwrite? [y/n] "
+#            case $yn in
+#                [Yy]* ) break;;
+#                [Nn]* ) return;;
+#            esac
+#        done
+#    fi
+#    read "description?Description: "
+#    description=${description:-"A simple WPA encrypted wireless conenction"}
+#    networks="$(availablewifi)"
+#    essid="$(echo "$networks\nCustom " | fzf)"
+#    if [ "$essid" = "Custom" ]; then
+#        read "essid?ESSID: "
+#    fi
+#    read "key?Key: "
+#    if [ ${key:0:1} = "\"" ]; then
+#        key=\"${key}\"
+#    fi
+#    echo "Description='$description'\nInterface=wlan0\nConnection=wireless\n\nSecurity=wpa\nIP=dhcp\n\nESSID='$essid'\nKey='$key'\n#Hidden=yes\n#Priority=10" | sudo tee /etc/netctl/$name > /dev/null
+#    sudo systemctl restart netctl-auto@wlan0.service
+#}
+function mkcd() {
+    mkdir "$1"
+    cd "$1"
+}
+function zipr() {
+    zip -r $1 $1
+}
+function gcc() {
+    name="${1%%.*}"
+    command gcc -o $name $name.c
+}
+function gcce() {
+    name="${1%%.*}"
+    command gcc -o $name $name.c
+    ./$name
+}
+function gdbe() {
+    command gcc -g -o $1b $1.c
+    gdb $1b
+}
+function cpf() {
+    cat $1 | copy
+}
+function paf() {
+    if [[ $1 == "" ]]; then
+        name="pasted.txt"
+    else
+        name="$1"
+    fi
+    if [[ -e "$name" || -L "$name" ]]; then
+        i=0
+        while [[ -e "$name-$i" || -L "$name-$i" ]]; do
+            i=$i+1
+        done
+        name=$name-$i
+    fi
+    xclip -selection c -o > $name
+}
+function ethernet() {
+    if [ "$1" = "off" ]; then
+        sudo netctl stop ethernet
+        sudo systemctl start netctl-auto@wlan0.service
+    else
+        sudo systemctl stop netctl-auto@wlan0.service
+        if [ "$2" != "" ]; then
+            sudo ip link set $2 down
+            echo "Description='A basic dhcp ethernet connection'\nInterface=$2\nConnection=ethernet\nIP=dhcp\nPriority=10" | sudo tee /etc/netctl/ethernet > /dev/null
+        else
+            interface=$(ip link show | awk 'NR % 2 == 1 {print substr($2, 1, length($2)-1)}' | fzf)
+            sudo ip link set $interface down
+            echo "Description='A basic dhcp ethernet connection'\nInterface=$interface\nConnection=ethernet\nIP=dhcp\nPriority=10" | sudo tee /etc/netctl/ethernet > /dev/null
+        fi
+        sudo netctl start ethernet
+    fi
+}
+function findinfiles() {
+    grep -r "$1" -e $(joinby " -e " ${@:2})
+}
+function joinby() {
+    local d=${1-} f=${2-}
+    if shift 2; then
+        printf %s "$f" "${@/#/$d}"
+    fi
+}
+function dirlc() {
+    find "$1" -type f | sed 's/.*/"&"/' | xargs wc -l
+}
+function findfzf() {
+    o $(sudo find ~ -name "*$1*" | sudo fzf --query "$2")
+}
+function tree() {
+    if [ -d "node_modules" ]; then
+        command tree -CI node_modules
+    else
+        command tree -C
+    fi
+}
+
+alias class="xprop WM_CLASS"
+alias xevkey="xev | awk -F'[ )]+' '/^KeyPress/ { a[NR+2] } NR in a { printf \"%-3s %s\n\", \$5, \$8 }'"
+alias pipes="pipes.sh -p 3 -t 1 -r 0 -R -c 1 -c 2 -c 3 -c 4 -c 5 -c 6 -c 7"
+alias sol="time ttysolitaire -p 10 --no-background-color"
+alias vpn="sudo surfshark-vpn"
+alias teams="teams --no-sandbox"
+alias v=vim
+alias btodo="cat ~/todo.txt"
+alias availablewifi="sudo iw dev wlan0 scan | ag SSID: | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' | cut -d' ' -f2- | sort | uniq"
+alias c=cd
+alias bt=bluetoothctl
+alias btstatus="bluetoothctl devices | cut -f2 -d' ' | while read uuid; do bluetoothctl info $uuid; done | grep -e \"Device\|Connected\|Name\""
+alias btslp="bluetoothctl connect E8:07:BF:AD:DD:32"
+alias btslpl="bluetoothctl connect E8:07:BF:B2:40:88"
+alias wifi="iw dev wlan0 link"
+alias services="systemctl --type=service"
+alias fif=findinfiles
+alias ff=findfzf
+alias off="systemctl poweroff"
+alias rewifi="sudo systemctl restart netctl-auto@wlan0.service"
+alias pacs="sudo pacman -S"
+alias pacu="sudo pacman -Syyu && ~/bin/keyboard.sh && pacman -Qe > ~/.config/pacman.installed"
+alias pacr="sudo pacman -R"
+alias installed="pacman -Qqe;echo ---;pacman -Qqm"
+alias py=python
+alias launch=sway-launcher-desktop
+alias rmorph="sudo pacman -Qtdq | sudo pacman -Rns -"
+alias firefox=firefox-developer-edition
+alias eye="~/bin/colourPicker"
+alias pdfmerge="gs -dBATCH -dNOPAUSE -q -sDEVICE=pdfwrite -sOutputFile=finished.pdf"
+alias topdf="soffice --headless --convert-to pdf"
+alias timetable="rifle ~/uni/timetable2.pdf"
+alias brt="brightnessctl -d intel_backlight"
+alias bat="echo $(cat /sys/class/power_supply/BAT0/capacity)%"
+alias mysqlstart="sudo systemctl start mariadb.service"
+alias td="\todo"
+alias cleartrash="rm -rf ~/.local/share/Trash/files ~/.local/share/Trash/info"
+alias lock="i3lockmore --blur 3 --lock-icon ~/pictures/wallpapers/lock.png"
+#alias lock="swaylock \
+#	--screenshots \
+#	--clock \
+#	--indicator \
+#	--indicator-radius 100 \
+#	--indicator-thickness 7 \
+#	--effect-blur 7x5 \
+#	--effect-vignette 0.5:0.5 \
+#	--ring-color bb00cc \
+#	--key-hl-color 880033 \
+#	--line-color 00000000 \
+#	--inside-color 00000088 \
+#	--separator-color 00000000 \
+#	--grace 3 \
+#	--fade-in 0.2"
+
+function tl() {
+    $(~/.screenlayout/tripleLayout.sh)
+    bspc wm -r
+}
+
+function dl() {
+    $(~/.screenlayout/doubleLayout.sh)
+    bspc wm -r
+}
+
+function sl() {
+    $(~/.screenlayout/singleLayout.sh)
+    bspc wm -r
+}
+
+function copy() {
+    if [ "$wm" = "sway" ]; then
+        wl-copy
+    else
+        xclip -sel clip
+    fi
+}
+
+alias ftp=lftp
+function ftpjh() {
+    lftp ftp.joeherbert.dev -u joeherbe,"$(bw get password 8448277f-3d36-46d3-9427-acd501450f75)" -p 21
+}
+function sshjh() {
+    sshpass -p "$(bw get password 8448277f-3d36-46d3-9427-acd501450f75)" ssh -p 7822 joeherbe@joeherbert.dev
+}
+function fuzdeploy() {
+    currDir="$(pwd)"
+    fuz 1> /dev/null
+    rm -r dist
+    git pull
+    npm run build
+    #cp -r distfiles/. dist/
+    lftp -c "open ftp.joeherbert.dev -u ykids@joeherbert.dev,\"s)L~.zS~\$1OP\" -p 21; mirror -R dist /"
+    cd $currDir 1> /dev/null
+}
+
+function newtex() {
+    title=$2
+    if [[ $2 = "" ]]; then 
+        title=$1
+    fi
+    echo '\\documentclass{article}
+\\usepackage[left=1.5cm, right=1.5cm, top=1cm, bottom=1cm]{geometry}
+\\usepackage{amsmath}
+\\usepackage{amsfonts}
+\\usepackage{xcolor}
+\\usepackage{multirow}
+\\usepackage{listings}
+\\usepackage{sansmathfonts}
+\\usepackage[T1]{fontenc}
+\\usepackage{titlesec}
+\\usepackage{pifont}
+\\usepackage{graphicx}
+\\graphicspath{ {./images/} }
+\\newcommand{\\lt}{\\textbackslash{}lt }
+\\newcommand{\\lk}{\\textbackslash{}lk }
+\\newcommand{\\lv}{\\textbackslash{}lv }
+\\newcommand{\\lc}{\\textbackslash{}lc }
+\\renewcommand{\\ll}{\\textbackslash{}ll }
+\\renewcommand{\\le}{\\textbackslash{}le }
+\\renewcommand{\\familydefault}{\\sfdefault}
+\\definecolor{lightblue}{HTML}{33AAFF}
+\\def\\define#1{{\\textbf{\\color{lightblue}{#1}}}}
+
+\\definecolor{codegreen}{rgb}{0,0.6,0}
+\\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\\definecolor{codepurple}{rgb}{0.88,0.3,0.92}
+\\definecolor{backcolour}{rgb}{0.1,0.1,0.1}
+\\definecolor{codeorange}{rgb}{0.9, 0.3, 0.3}
+\\definecolor{codeblue}{rgb}{0.5, 0.5, 1}
+
+\\lstdefinestyle{mystyle}{
+    backgroundcolor=\\color{backcolour},   
+    commentstyle=\\color{codegreen},
+    keywordstyle=\\color{codeorange},
+    numberstyle=\\tiny\\color{codegray},
+    stringstyle=\\color{codepurple},
+    identifierstyle=\\color{codeblue},
+    basicstyle=\\ttfamily\\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2
+}
+
+\\lstset{style=mystyle}
+\\definecolor{nearlyblack}{HTML}{222222}
+\\pagecolor{nearlyblack}
+\\color{white}
+
+\\title{'$title'}
+\\author{Joe Herbert}
+\\date{'$(date +'%A, %B %d, %Y')'}
+
+\\begin{document}
+\\maketitle
+\\section*{}
+
+
+
+\\end{document}' > "$1.tex"
+    vim "$1.tex"
+}
+function nt() {
+    newtex "w$1l$2" "Week $1 Lecture $2"
+}
+
+rgb() {
+    HEX="${1#\#}"
+    R=$(printf "%d" 0x"${HEX:0:2}")
+    G=$(printf "%d" 0x"${HEX:2:2}")
+    B=$(printf "%d" 0x"${HEX:4:2}")
+    echo "rgb($R, $G, $B)"
+}

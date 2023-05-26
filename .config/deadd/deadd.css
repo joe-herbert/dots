@@ -1,0 +1,172 @@
+
+/* Notification center */
+
+.blurredBG, #main_window, .blurredBG.low, .blurredBG.normal {
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.noti-center.time {
+    font-size: 32px;
+}
+
+/* Notifications */
+
+.title {
+    font-weight: bold;
+    font-size: 16px;
+}
+
+.appname {
+    font-size: 12px;
+}
+
+.time {
+    font-size: 12px;
+}
+
+.blurredBG.notification {
+    background:  rgba(0, 0, 0, 0.4);
+}
+
+.blurredBG.notification.critical {
+    background: rgba(255, 0, 0, 0.5);
+}
+
+.notificationInCenter.critical {
+    background: rgba(155, 0, 20, 0.5);
+}
+
+/* Labels */
+
+label {
+    color: #cdd;
+}
+
+label.notification {
+    color: #cdd;
+}
+
+label.critical {
+    color: #000;
+}
+.notificationInCenter label.critical {
+    color: #fff;
+}
+
+
+/* Buttons */
+
+button {
+    background: transparent;
+    color: #cdd;
+    border-radius: 3px;
+    border-width: 0px;
+    background-position: 0px 0px;
+    text-shadow: none;
+}
+
+button:hover {
+    border-radius: 3px;
+    background: rgba(0, 20, 20, 0.2);
+    border-width: 0px;
+    border-top: transparent;
+    border-color: #f00;
+    color: #fee;
+}
+
+
+/* Custom Buttons */
+
+.userbutton {
+    background: rgba(220,200,200, 0.15);
+}
+
+.userbuttonlabel {
+    color: #cdd;
+    font-size: 24px;
+}
+
+.userbutton:hover {
+    background: rgba(220,200,200, 0.2);
+}
+
+.userbuttonlabel:hover {
+    color: #eee;
+}
+
+button.buttonState1 {
+    background: rgba(220,200,200,0.5);
+}
+
+.userbuttonlabel.buttonState1 {
+    color: #fff;
+}
+
+button.buttonState1:hover {
+    background: rgba(220,200,200, 0.4);
+}
+
+.userbuttonlabel.buttonState1:hover {
+    color: #eee;
+}
+
+button.buttonState2 {
+    background: rgba(200,200,200,0.3);
+}
+
+.userbuttonlabel.buttonState2 {
+    color: #cdd;
+}
+
+button.buttonState2:hover {
+    background: rgba(220,200,200, 0.3);
+}
+
+.userbuttonlabel.buttonState2:hover {
+    color: #eee;
+}
+
+
+/* Images */
+
+image.deadd-noti-center.notification.image {
+    margin-left: 10px;
+    border-radius: 5px;
+}
+image.deadd-noti-center.in-center.image {
+    border-radius: 10px;
+}
+label.deadd-noti-center.in-center.appname {
+    margin-right: 10px;
+}
+
+/* App-specific */
+.notification.Spotify,
+.notificationInCenter.Spotify {
+    background: linear-gradient(130deg, rgba(0, 30, 0, 0.1), rgba(0, 255, 0, 0.3));
+    border-radius: 5px;
+}
+
+.notification.Signal,
+.notificationInCenter.Signal {
+    background: linear-gradient(130deg, rgba(0, 0, 30, 0.1), rgba(0, 0, 180, 0.3));
+    border-radius: 5px;
+}
+
+.notification.batsignal,
+.notificationInCenter.batsignal {
+    background: linear-gradient(130deg, rgba(30, 0, 0, 0.1), rgba(125, 0, 0, 0.3));
+    border-radius: 5px;
+}
+
+.notification.batsignal.critical,
+.notificationInCenter.batsignal.critical {
+    background: linear-gradient(130deg, rgba(30, 0, 0, 0.1), rgba(255, 0, 0, 0.3));
+    border-radius: 5px;
+}
+
+.notification.batsignal.low,
+.notificationInCenter.batsignal.low {
+    background: linear-gradient(130deg, rgba(0, 30, 0, 0.1), rgba(0, 255, 0, 0.3));
+    border-radius: 5px;
+}

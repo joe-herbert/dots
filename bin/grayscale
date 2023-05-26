@@ -1,0 +1,12 @@
+#!/bin/sh
+CONFIG=~/.config/picom/picom.conf
+if [ -f ~/.local/grayscale ]; then
+    rm ~/.local/grayscale
+    #picom --config ~/.config/picom/picom.conf &
+    head -n -1 $CONFIG > tmppicomconf
+    mv tmppicomconf $CONFIG
+else
+    touch ~/.local/grayscale
+    echo 'window-shader-fg = "grayscale.glsl";' >> $CONFIG
+    #picom --window-shader-fg ~/.config/picom/grayscale.glsl &
+fi

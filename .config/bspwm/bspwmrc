@@ -1,0 +1,99 @@
+#! /bin/sh
+
+#pkill dunst
+pkill deadd-notificat
+pkill batsignal
+pkill polybar
+pkill feh
+pkill picom
+
+while pgrep -u $UID -x picom >/dev/null; do sleep 1; done
+
+pgrep -x sxhkd > /dev/null || sxhkd &
+picom --config ~/.config/picom/picom.conf &
+~/bin/deadd-notification-center &
+#dunst > /dev/null &
+~/bin/batsignal -b -f 100
+$(~/.screenlayout/tripleLayout.sh)
+
+bspc config border_width         0
+bspc config window_gap           10
+bspc config top_padding          34
+
+bspc config split_ratio          0.52
+bspc config borderless_monocle   true
+bspc config gapless_monocle      false
+
+bspc rule -a Zathura state=tiled
+
+#bspc subscribe node_state | while read -r _ _ _ node state status; do
+#    if [[ "$state" == "floating" ]]; then
+#        case "$status" in
+#            off) xprop -id "$node" -remove _COMPTON_SHADOW;;
+#            on) xprop -id "$node" -f _COMPTON_SHADOW 32c -set _COMPTON_SHADOW 1;;
+#        esac
+#    fi
+#done
+
+MONITORS=( $(xrandr --query | grep " connected" | cut -d" " -f1 | xargs) )
+INTERNAL_MONITOR="${MONITORS[0]}"
+EXTERNAL_MONITOR1="${MONITORS[1]}"
+EXTERNAL_MONITOR2="${MONITORS[2]}"
+echo "'$INTERNAL_MONITOR' '$EXTERNAL_MONITOR1' '$EXTERNAL_MONITOR2'" > /tmp/monitors
+#INTERNAL_MONITOR="eDP1"
+#EXTERNAL_MONITOR1="DP2"
+#EXTERNAL_MONITOR2="DP3"
+# on first load setup default workspaces
+if [[ "$EXTERNAL_MONITOR1" = "" ]]; then
+    if [[ "$EXTERNAL_MONITOR2" = "" ]]; then
+        $(~/.screenlayout/singleLayout.sh)
+        bspc wm -O $INTERNAL_MONITOR
+        bspc monitor $INTERNAL_MONITOR -d 1 2 3 4 5 6 7 8 9 10
+    else
+        bspc wm -O $INTERNAL_MONITOR $EXTERNAL_MONITOR2
+        $(~/.screenlayout/doubleLayout.sh)
+        bspc monitor $INTERNAL_MONITOR -d 1 2 3 4 5
+        bspc monitor $EXTERNAL_MONITOR2 -d 6 7 8 9 10
+    fi
+else
+    if [[ "$EXTERNAL_MONITOR2" = "" ]]; then
+        $(~/.screenlayout/doubleLayout.sh)
+        bspc wm -O $INTERNAL_MONITOR $EXTERNAL_MONITOR1
+        bspc monitor $INTERNAL_MONITOR -d 1 2 3 4 5
+        bspc monitor $EXTERNAL_MONITOR1 -d 6 7 8 9 10
+    else
+        $(~/.screenlayout/tripleLayout.sh)
+        bspc wm -O $INTERNAL_MONITOR $EXTERNAL_MONITOR1 $EXTERNAL_MONITOR2
+        bspc monitor $INTERNAL_MONITOR -d 1 2 3
+        bspc monitor $EXTERNAL_MONITOR1 -d 4 5 6
+        bspc monitor $EXTERNAL_MONITOR2 -d 7 8 9 10
+    fi
+fi
+
+feh --bg-fill $HOME/pictures/wallpapers/megOutline.jpeg &
+$HOME/.config/polybar/launch.sh &
+
+# startup apps
+if [ ! -e /tmp/startup_completed ]; then
+    bspc rule -a Signal --one-shot desktop="^1"
+    signal-desktop &
+    bspc rule -a discord --one-shot desktop="^1"
+    discord &
+    bspc rule -a Spotify --one-shot desktop="^2"
+    spotify &
+    bspc rule -a kitty --one-shot desktop="^3"
+    kitty &
+    bspc rule -a firefoxdeveloperedition --one-shot desktop="^4"
+    firefox-developer-edition &
+    touch /tmp/startup_completed
+fi
+
+
+#bspc rule -a Anamnesis state=floating
+#bspc rule -a Yad state=floating
+
+#bspc rule -a Gimp desktop='^8' state=floating follow=on
+#bspc rule -a Chromium desktop='^2'
+#bspc rule -a mplayer2 state=floating
+#bspc rule -a Kupfer.py focus=on
+#bspc rule -a Screenkey manage=off

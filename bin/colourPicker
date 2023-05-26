@@ -1,0 +1,5 @@
+#!/bin/sh
+colour=$(xcolor --format hex)
+echo $colour | tr -d '\n' | xclip -sel clip
+convert -size 100x100 xc:"$colour" "/tmp/colourIcon.png"
+notify-send -a "Colour Picker" "$colour" --hint string:image-path:file:///tmp/colourIcon.png

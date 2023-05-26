@@ -1,0 +1,12 @@
+#!/bin/sh
+clear
+wm=$(echo -e "bspwm\nsway\ni3\nawesome\nwayfire\nhyperland\ntty" | fzf --reverse --no-info)
+case $wm in
+    bspwm) startx ~/.xinitrc bspwm;;
+    sway) sway;;
+    i3) startx ~/.xinitrc i3;;
+    awesome) startx ~/.xinitrc awesome;;
+    wayfire) wayfire;;
+    hyprland) Hyprland;;
+    *) exit 0;;
+esac
